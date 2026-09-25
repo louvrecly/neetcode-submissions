@@ -1,0 +1,39 @@
+class Solution:
+    def minWindow(self, s: str, t: str) -> str:
+        # s: abccbadd | t: abbd
+        # a b c c b a d d | {a:1 b:2 d:1}
+        # LR | a | m: 1 < 3 | l: - | r: -
+        # L R | ab | m: 1 < 3 | l: - | r: -
+        # L   R | abc | m: 1 < 3 | l: - | r: -
+        # L     R | abcc | m: 1 < 3 | l: - | r: -
+        # L       R | abccb | m: 2 < 3 | l: - | r: -
+        # L         R | abccba | m: 2 < 3 | l: - | r: -
+        # L           R | abccbad | m: 3 = 3 | l: 7 | r: abccbad
+        #   L         R | bccbad | m: 3 = 3 | l: 6 | r: bccbad
+        #   L           R | bccbadd | m: 3 = 3 | l: - | r: bccbad
+        # Two Pointers - Same Direction (Sliding Window)
+        # Time: O(m + n) | Space: O(m + n)
+        t_counter = {}
+        for char in t:
+            t_counter[char] = t_counter.get(char, 0) + 1
+
+        left = 0
+        counter = {}
+        matches = 0
+        window = [-1, -1]
+
+        for right in range(len(s)):
+            counter[s[right]] = counter.get(s[right], 0) + 1
+            if counter[s[right]] == t_counter.get(s[right]):
+                matches += 1
+
+            while left <= right and matches == len(t_counter):
+                if max(window) == -1 or right - left < window[1] - window[0]:
+                    window = [left, right]
+
+                counter[s[left]] -= 1
+                if counter[s[left]] < t_counter.get(s[left], 0):
+                    matches -= 1
+                left += 1
+
+        return s[window[0]:window[1] + 1] if max(window) > -1 else ''
